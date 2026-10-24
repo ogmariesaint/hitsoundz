@@ -9,16 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class HitSoundsConfig {
+    private static final int VERSION = 3;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("hitsounds.json");
     private static HitSoundsConfig instance;
 
-    public int version = 0;         // 2 = формат «задержка в мс»; старые файлы (pitch) сбрасываются
+    public int version = 0;         // старые файлы (другой формат) сбрасываются
     public boolean enabled = true;
     public boolean visual = true;   // красная вспышка урона у цели
-    public int crit = 0;            // задержка эффекта в мс, 0..100 (0 = сразу после клика)
-    public int sweep = 0;
-    public int sprint = 0;
+    public int delay = 0;           // задержка эффекта в мс, 0..100 (0 = сразу после клика)
 
     public static HitSoundsConfig get() {
         if (instance == null) instance = load();
@@ -29,11 +28,14 @@ public final class HitSoundsConfig {
         try {
             if (Files.exists(PATH)) {
                 HitSoundsConfig c = GSON.fromJson(Files.readString(PATH), HitSoundsConfig.class);
-                if (c != null && c.version >= 2) return c;
+                if (c != null && c.version >= VERSION) {
+                    c.delay = Math.max(0, Math.min(100, c.delay));
+                    return c;
+                }
             }
         } catch (Exception ignored) {}
         HitSoundsConfig fresh = new HitSoundsConfig();
-        fresh.version = 2;
+        fresh.version = VERSION;
         return fresh;
     }
 

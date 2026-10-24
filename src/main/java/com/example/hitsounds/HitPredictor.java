@@ -37,6 +37,7 @@ public final class HitPredictor {
     private static final Identifier CRIT_ID = Identifier.ofVanilla("entity.player.attack.crit");
     private static final Identifier SWEEP_ID = Identifier.ofVanilla("entity.player.attack.sweep");
     private static final Identifier KNOCKBACK_ID = Identifier.ofVanilla("entity.player.attack.knockback");
+    private static final Identifier STRONG_ID = Identifier.ofVanilla("entity.player.attack.strong");
 
     /** Предсказанные удары, для которых ждём серверный звук (чтобы его заглушить). */
     private static final Map<Kind, Long> PENDING = new EnumMap<>(Kind.class);
@@ -47,6 +48,9 @@ public final class HitPredictor {
         t.setDaemon(true);
         return t;
     });
+
+    /** Сервер при спринт-ударе шлёт ещё и звук "strong", его тоже нужно заглушить. */
+    private static long pendingStrong;
 
     private static long lastHit;
     private static boolean serverSprint;
@@ -101,40 +105,42 @@ public final class HitPredictor {
                 && !mc.options.forwardKey.isPressed();
 
         Kind kind;
-        int delay;
         if (knockback) {
             kind = Kind.SPRINT;
-            delay = cfg.sprint;
             serverSprint = false; // сервер сбрасывает спринт после такого удара
         } else if (crit) {
             kind = Kind.CRIT;
-            delay = cfg.crit;
         } else if (sweep) {
             kind = Kind.SWEEP;
-            delay = cfg.sweep;
         } else {
             return ActionResult.PASS; // обычные удары не трогаем
         }
 
         PENDING.put(kind, now);
+        if (kind == Kind.SPRINT) pendingStrong = now;
         final Kind k = kind;
-        runAfter(delay, () -> play(target, k));
+        runAfter(cfg.delay, () -> play(target, k));
         return ActionResult.PASS;
     }
 
     private static void play(LivingEntity target, Kind kind) {
         MinecraftClient mc = MinecraftClient.getInstance();
         HitSoundsConfig cfg = HitSoundsConfig.get();
-        if (mc.world == null || !target.isAlive()) return;
+        if (mc.world == null || mc.player == null) return;
 
-        SoundEvent sound = switch (kind) {
-            case CRIT -> SoundEvents.ENTITY_PLAYER_ATTACK_CRIT;
-            case SWEEP -> SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP;
-            case SPRINT -> SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK;
-        };
-        playSound(sound, target.getX(), target.getY(), target.getZ());
+        // как и сервер: звуки атаки играют в точке, где стоит атакующий (центр, без панорамирования)
+        double x = mc.player.getX(), y = mc.player.getY(), z = mc.player.getZ();
+        if (kind == Kind.CRIT) {
+            playSound(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, x, y, z);
+        } else if (kind == Kind.SWEEP) {
+            playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, x, y, z);
+        } else {
+            // спринт-удар в ваниле = knockback + strong
+            playSound(SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK, x, y, z);
+            playSound(SoundEvents.ENTITY_PLAYER_ATTACK_STRONG, x, y, z);
+        }
 
-        if (cfg.visual) {
+        if (cfg.visual && target.isAlive()) {
             target.hurtTime = 10;
             target.maxHurtTime = 10;
         }
@@ -158,6 +164,12 @@ public final class HitPredictor {
     /** Вызывается из миксина: true, если серверный звук нужно заглушить как дубль. */
     public static boolean shouldCancelServerSound(RegistryEntry<SoundEvent> sound) {
         if (!HitSoundsConfig.get().enabled) return false;
+
+        if (sound.matchesId(STRONG_ID)) {
+            boolean dup = pendingStrong != 0 && System.currentTimeMillis() - pendingStrong <= PENDING_TTL_MS;
+            if (dup) pendingStrong = 0;
+            return dup;
+        }
 
         Kind kind = null;
         if (sound.matchesId(CRIT_ID)) kind = Kind.CRIT;

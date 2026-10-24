@@ -6,7 +6,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -25,7 +24,7 @@ public class HitSoundsScreen extends Screen {
 
     // размеры
     private static final int PANEL_W = 270;
-    private static final int PANEL_H = 262;
+    private static final int PANEL_H = 196;
     private static final int PAD = 16;
     private static final int INNER_W = PANEL_W - PAD * 2;
 
@@ -42,22 +41,20 @@ public class HitSoundsScreen extends Screen {
         py = (height - PANEL_H) / 2;
         int x = px + PAD;
 
-        addRow(x, py + 54, "hitsounds.crit", cfg.crit, v -> cfg.crit = v, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT);
-        addRow(x, py + 90, "hitsounds.sweep", cfg.sweep, v -> cfg.sweep = v, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP);
-        addRow(x, py + 126, "hitsounds.sprint", cfg.sprint, v -> cfg.sprint = v, SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK);
+        addRow(x, py + 54);
 
         addDrawableChild(ButtonWidget.builder(toggleText("hitsounds.visual", cfg.visual), b -> {
             cfg.visual = !cfg.visual;
             b.setMessage(toggleText("hitsounds.visual", cfg.visual));
-        }).dimensions(x, py + 180, INNER_W, 20).build());
+        }).dimensions(x, py + 108, INNER_W, 20).build());
 
         addDrawableChild(ButtonWidget.builder(toggleText("hitsounds.enabled", cfg.enabled), b -> {
             cfg.enabled = !cfg.enabled;
             b.setMessage(toggleText("hitsounds.enabled", cfg.enabled));
-        }).dimensions(x, py + 206, INNER_W, 20).build());
+        }).dimensions(x, py + 132, INNER_W, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("hitsounds.done"), b -> close())
-                .dimensions(x, py + 234, INNER_W, 20).build());
+                .dimensions(x, py + 160, INNER_W, 20).build());
     }
 
     private static Text toggleText(String key, boolean on) {
@@ -65,16 +62,18 @@ public class HitSoundsScreen extends Screen {
                 .append(Text.literal(on ? "ON" : "OFF").formatted(on ? Formatting.GREEN : Formatting.RED));
     }
 
-    private void addRow(int x, int y, String key, int initial, IntConsumer setter, SoundEvent sound) {
+    private void addRow(int x, int y) {
         int testW = 52;
-        PingSlider slider = new PingSlider(x, y, INNER_W - testW - 6, 30, Text.translatable(key), initial, setter);
+        PingSlider slider = new PingSlider(x, y, INNER_W - testW - 6, 30, Text.translatable("hitsounds.delay"),
+                cfg.delay, v -> cfg.delay = v);
         addDrawableChild(slider);
         addDrawableChild(ButtonWidget.builder(Text.translatable("hitsounds.test"), b -> {
             if (client != null && client.player != null) {
-                // тест: звук с выбранной задержкой
+                // тест: звук крита с выбранной задержкой
                 int delay = (int) Math.round(slider.getValue() * 100);
                 double ex = client.player.getX(), ey = client.player.getY(), ez = client.player.getZ();
-                HitPredictor.runAfter(delay, () -> HitPredictor.playSound(sound, ex, ey, ez));
+                HitPredictor.runAfter(delay, () ->
+                        HitPredictor.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, ex, ey, ez));
             }
         }).dimensions(x + INNER_W - testW, y + 5, testW, 20).build());
     }
@@ -92,7 +91,7 @@ public class HitSoundsScreen extends Screen {
         context.drawTextWithShadow(tr, Text.translatable("hitsounds.subtitle"), px + PAD, py + 25, MUTED);
         context.fill(px + PAD, py + 38, px + PAD + 28, py + 40, ACCENT);
 
-        context.drawTextWithShadow(tr, Text.translatable("hitsounds.hint"), px + PAD, py + 164, MUTED);
+        context.drawTextWithShadow(tr, Text.translatable("hitsounds.hint"), px + PAD, py + 92, MUTED);
     }
 
     @Override
