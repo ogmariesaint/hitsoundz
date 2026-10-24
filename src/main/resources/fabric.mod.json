@@ -3,7 +3,7 @@
   "id": "hitsounds",
   "version": "${version}",
   "name": "Hit Sounds",
-  "description": "Настройка pitch звуков удара (крит, sweep, спринт-удар). Меню: Right Shift.",
+  "description": "Мгновенный показ звука и анимации удара (компенсация пинга). Меню: Right Shift.",
   "authors": [],
   "license": "CC0-1.0",
   "environment": "client",

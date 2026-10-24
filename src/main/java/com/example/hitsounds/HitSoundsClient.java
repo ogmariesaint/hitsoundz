@@ -14,6 +14,7 @@ public class HitSoundsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         HitSoundsConfig.get();
+        HitPredictor.init();
 
         openKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.hitsounds.open",

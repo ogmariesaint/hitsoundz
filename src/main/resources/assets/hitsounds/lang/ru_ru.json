@@ -1,11 +1,15 @@
 {
   "key.hitsounds.open": "Открыть меню Hit Sounds",
   "key.category.hitsounds.main": "Hit Sounds",
-  "hitsounds.title": "Звуки удара",
+  "hitsounds.title": "Hit Sounds",
+  "hitsounds.subtitle": "Компенсация пинга: звук и анимация удара",
   "hitsounds.crit": "Крит",
   "hitsounds.sweep": "Сплэш (sweep)",
   "hitsounds.sprint": "Спринт-удар",
   "hitsounds.enabled": "Мод включён",
+  "hitsounds.visual": "Анимация удара",
   "hitsounds.test": "Тест",
-  "hitsounds.done": "Готово"
+  "hitsounds.done": "Готово",
+  "hitsounds.ms": "мс",
+  "hitsounds.hint": "0 мс = эффект сразу после клика"
 }

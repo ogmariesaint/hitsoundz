@@ -2,10 +2,14 @@
   "key.hitsounds.open": "Open Hit Sounds menu",
   "key.category.hitsounds.main": "Hit Sounds",
   "hitsounds.title": "Hit Sounds",
+  "hitsounds.subtitle": "Ping compensation: hit sound & animation",
   "hitsounds.crit": "Critical",
   "hitsounds.sweep": "Sweep (splash)",
   "hitsounds.sprint": "Sprint hit",
   "hitsounds.enabled": "Mod enabled",
+  "hitsounds.visual": "Hit animation",
   "hitsounds.test": "Test",
-  "hitsounds.done": "Done"
+  "hitsounds.done": "Done",
+  "hitsounds.ms": "ms",
+  "hitsounds.hint": "0 ms = effect right after the click"
 }
