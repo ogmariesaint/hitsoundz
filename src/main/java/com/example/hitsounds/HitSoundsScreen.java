@@ -8,8 +8,9 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-
 import java.util.function.IntConsumer;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.math.random.Random;
 
 public class HitSoundsScreen extends Screen {
     private final HitSoundsConfig cfg = HitSoundsConfig.get();
@@ -41,7 +42,11 @@ public class HitSoundsScreen extends Screen {
         addDrawableChild(new PitchSlider(x, y, sw, Text.translatable(key), initial, setter));
         addDrawableChild(ButtonWidget.builder(Text.translatable("hitsounds.test"), b -> {
             // pitch подменит миксин по значению из конфига
-            client.getSoundManager().play(PositionedSoundInstance.master(sound, 1.0f));
+            if (client.player != null) {
+    client.getSoundManager().play(new PositionedSoundInstance(
+            sound, SoundCategory.PLAYERS, 1.0f, 1.0f,
+            Random.create(), client.player.getX(), client.player.getY(), client.player.getZ()));
+}
         }).dimensions(x + sw + 4, y, tw, 20).build());
     }
 
