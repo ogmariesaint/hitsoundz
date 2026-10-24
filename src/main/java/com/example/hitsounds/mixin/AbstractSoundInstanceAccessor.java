@@ -1,11 +1,6 @@
 package com.example.hitsounds.mixin;
 
-import net.minecraft.client.sound.AbstractSoundInstance;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(AbstractSoundInstance.class)
-public interface AbstractSoundInstanceAccessor {
-    @Accessor("pitch")
-    void hitsounds$setPitch(float pitch);
+/** Не используется (оставлен пустым, чтобы перезаписать старую версию файла). Можно удалить. */
+final class AbstractSoundInstanceAccessor {
+    private AbstractSoundInstanceAccessor() {}
 }

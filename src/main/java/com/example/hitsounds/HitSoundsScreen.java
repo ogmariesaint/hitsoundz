@@ -11,7 +11,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
 
 public class HitSoundsScreen extends Screen {
@@ -21,10 +20,8 @@ public class HitSoundsScreen extends Screen {
     private static final int ACCENT = 0xFF8B6CFF;
     private static final int ACCENT_DIM = 0xFF4A3B96;
     private static final int TRACK = 0xFF2A2A3E;
-    private static final int ROW_BG = 0xFF1C1C2C;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFF9A9AB5;
-    private static final int OFF = 0xFF4A4A60;
 
     // размеры
     private static final int PANEL_W = 270;
@@ -49,26 +46,37 @@ public class HitSoundsScreen extends Screen {
         addRow(x, py + 90, "hitsounds.sweep", cfg.sweep, v -> cfg.sweep = v, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP);
         addRow(x, py + 126, "hitsounds.sprint", cfg.sprint, v -> cfg.sprint = v, SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK);
 
-        addDrawableChild(new ToggleRow(x, py + 180, INNER_W, 22, Text.translatable("hitsounds.visual"),
-                () -> cfg.visual, () -> cfg.visual = !cfg.visual));
-        addDrawableChild(new ToggleRow(x, py + 206, INNER_W, 22, Text.translatable("hitsounds.enabled"),
-                () -> cfg.enabled, () -> cfg.enabled = !cfg.enabled));
+        addDrawableChild(ButtonWidget.builder(toggleText("hitsounds.visual", cfg.visual), b -> {
+            cfg.visual = !cfg.visual;
+            b.setMessage(toggleText("hitsounds.visual", cfg.visual));
+        }).dimensions(x, py + 180, INNER_W, 20).build());
 
-        addDrawableChild(new StyledButton(x, py + 234, INNER_W, 20, Text.translatable("hitsounds.done"), b -> close()));
+        addDrawableChild(ButtonWidget.builder(toggleText("hitsounds.enabled", cfg.enabled), b -> {
+            cfg.enabled = !cfg.enabled;
+            b.setMessage(toggleText("hitsounds.enabled", cfg.enabled));
+        }).dimensions(x, py + 206, INNER_W, 20).build());
+
+        addDrawableChild(ButtonWidget.builder(Text.translatable("hitsounds.done"), b -> close())
+                .dimensions(x, py + 234, INNER_W, 20).build());
+    }
+
+    private static Text toggleText(String key, boolean on) {
+        return Text.translatable(key).append(": ")
+                .append(Text.literal(on ? "ON" : "OFF").formatted(on ? Formatting.GREEN : Formatting.RED));
     }
 
     private void addRow(int x, int y, String key, int initial, IntConsumer setter, SoundEvent sound) {
         int testW = 52;
         PingSlider slider = new PingSlider(x, y, INNER_W - testW - 6, 30, Text.translatable(key), initial, setter);
         addDrawableChild(slider);
-        addDrawableChild(new StyledButton(x + INNER_W - testW, y + 5, testW, 20, Text.translatable("hitsounds.test"), b -> {
+        addDrawableChild(ButtonWidget.builder(Text.translatable("hitsounds.test"), b -> {
             if (client != null && client.player != null) {
                 // тест: звук с выбранной задержкой
                 int delay = (int) Math.round(slider.getValue() * 100);
                 double ex = client.player.getX(), ey = client.player.getY(), ez = client.player.getZ();
                 HitPredictor.runAfter(delay, () -> HitPredictor.playSound(sound, ex, ey, ez));
             }
-        }));
+        }).dimensions(x + INNER_W - testW, y + 5, testW, 20).build());
     }
 
     @Override
@@ -100,7 +108,7 @@ public class HitSoundsScreen extends Screen {
         c.fill(x, y + 2, x + w, y + h - 2, color);
     }
 
-    // ---------- виджеты ----------
+    // ---------- слайдер ----------
 
     private static class PingSlider extends SliderWidget {
         private final Text label;
@@ -147,50 +155,6 @@ public class HitSoundsScreen extends Screen {
             int kx = tx + filled - 3;
             int kc = (isHovered() || isFocused()) ? WHITE : 0xFFD8D0FF;
             roundedFill(c, kx, ty - 3, 6, 12, kc);
-        }
-    }
-
-    private static class StyledButton extends ButtonWidget {
-        private final Text label;
-
-        StyledButton(int x, int y, int w, int h, Text label, PressAction action) {
-            super(x, y, w, h, label, action, DEFAULT_NARRATION_SUPPLIER);
-            this.label = label;
-        }
-
-        @Override
-        public void renderWidget(DrawContext c, int mouseX, int mouseY, float delta) {
-            TextRenderer tr = MinecraftClient.getInstance().textRenderer;
-            roundedFill(c, getX(), getY(), getWidth(), getHeight(), isHovered() ? ACCENT : ACCENT_DIM);
-            c.drawCenteredTextWithShadow(tr, label, getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2, WHITE);
-        }
-    }
-
-    private static class ToggleRow extends ButtonWidget {
-        private final Text label;
-        private final BooleanSupplier state;
-
-        ToggleRow(int x, int y, int w, int h, Text label, BooleanSupplier state, Runnable toggle) {
-            super(x, y, w, h, label, b -> toggle.run(), DEFAULT_NARRATION_SUPPLIER);
-            this.label = label;
-            this.state = state;
-        }
-
-        @Override
-        public void renderWidget(DrawContext c, int mouseX, int mouseY, float delta) {
-            TextRenderer tr = MinecraftClient.getInstance().textRenderer;
-            int x = getX(), y = getY(), w = getWidth(), h = getHeight();
-            boolean on = state.getAsBoolean();
-
-            roundedFill(c, x, y, w, h, isHovered() ? 0xFF24243A : ROW_BG);
-            c.drawTextWithShadow(tr, label, x + 8, y + (h - 8) / 2, WHITE);
-
-            // переключатель-«таблетка»
-            int sw = 28, sh = 12;
-            int sx = x + w - sw - 8, sy = y + (h - sh) / 2;
-            roundedFill(c, sx, sy, sw, sh, on ? ACCENT : OFF);
-            int kx = on ? sx + sw - sh + 1 : sx + 1;
-            roundedFill(c, kx, sy + 1, sh - 2, sh - 2, WHITE);
         }
     }
 }
