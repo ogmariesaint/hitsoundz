@@ -2,6 +2,6 @@
   "required": true,
   "package": "com.example.hitsounds.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["SoundManagerMixin", "AbstractSoundInstanceAccessor"],
+  "client": ["SoundManagerMixin"],
   "injectors": { "defaultRequire": 1 }
 }
