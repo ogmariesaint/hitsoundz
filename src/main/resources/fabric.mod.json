@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "hitsounds",
+  "version": "${version}",
+  "name": "Hit Sounds",
+  "description": "Настройка pitch звуков удара (крит, sweep, спринт-удар). Меню: Right Shift.",
+  "authors": [],
+  "license": "CC0-1.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.hitsounds.HitSoundsClient"]
+  },
+  "mixins": ["hitsounds.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": { "vulkanmod": "*" }
+}

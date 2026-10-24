@@ -1,0 +1,11 @@
+{
+  "key.hitsounds.open": "Открыть меню Hit Sounds",
+  "key.category.hitsounds.main": "Hit Sounds",
+  "hitsounds.title": "Звуки удара",
+  "hitsounds.crit": "Крит",
+  "hitsounds.sweep": "Сплэш (sweep)",
+  "hitsounds.sprint": "Спринт-удар",
+  "hitsounds.enabled": "Мод включён",
+  "hitsounds.test": "Тест",
+  "hitsounds.done": "Готово"
+}

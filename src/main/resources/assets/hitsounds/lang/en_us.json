@@ -1,0 +1,11 @@
+{
+  "key.hitsounds.open": "Open Hit Sounds menu",
+  "key.category.hitsounds.main": "Hit Sounds",
+  "hitsounds.title": "Hit Sounds",
+  "hitsounds.crit": "Critical",
+  "hitsounds.sweep": "Sweep (splash)",
+  "hitsounds.sprint": "Sprint hit",
+  "hitsounds.enabled": "Mod enabled",
+  "hitsounds.test": "Test",
+  "hitsounds.done": "Done"
+}
