@@ -3,26 +3,23 @@ package com.example.hitsounds.mixin;
 import com.example.hitsounds.HitSoundsConfig;
 import net.minecraft.client.sound.AbstractSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.client.sound.SoundManager;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(SoundManager.class)
+// Название файла осталось старым, но класс теперь целится в AbstractSoundInstance
+@Mixin(AbstractSoundInstance.class)
 public class SoundManagerMixin {
 
-    @ModifyVariable(
-            method = "play(Lnet/minecraft/client/sound/SoundInstance;)",
-            at = @At("HEAD"),
-            argsOnly = true
-    )
-    private SoundInstance hitsounds$adjustPitch(SoundInstance sound) {
+    @Inject(method = "getPitch()F", at = @At("HEAD"), cancellable = true)
+    private void hitsounds$pitch(CallbackInfoReturnable<Float> cir) {
         HitSoundsConfig cfg = HitSoundsConfig.get();
-        if (!cfg.enabled || !(sound instanceof AbstractSoundInstance)) return sound;
+        if (!cfg.enabled) return;
 
-        Identifier id = sound.getId();
-        if (!"minecraft".equals(id.getNamespace())) return sound;
+        Identifier id = ((SoundInstance) (Object) this).getId();
+        if (id == null || !"minecraft".equals(id.getNamespace())) return;
 
         Integer value = switch (id.getPath()) {
             case "entity.player.attack.crit" -> cfg.crit;
@@ -32,8 +29,7 @@ public class SoundManagerMixin {
         };
 
         if (value != null) {
-            ((AbstractSoundInstanceAccessor) sound).hitsounds$setPitch(HitSoundsConfig.toPitch(value));
+            cir.setReturnValue(HitSoundsConfig.toPitch(value));
         }
-        return sound;
     }
 }
